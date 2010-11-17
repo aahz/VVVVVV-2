@@ -316,13 +316,8 @@ int main( int argc, char* args[] ){
                 apply_surface( 50, 90, ButContinue, buttonSur );
                 apply_surface( 50, 210, ButCredits, buttonSur );
                 if( keystates[ SDLK_SPACE ] ){
-                    //SDL_BlitSurface( HowTo1, NULL, addSur, NULL );
-                    //SDL_BlitSurface( HowTo2, NULL, addSur, NULL );
-                    //SDL_BlitSurface( Credits, NULL, screen, NULL );
-                    //SDL_BlitSurface( Name1, NULL, screen, NULL );
-                    //SDL_BlitSurface( Name2, NULL, screen, NULL );
                     apply_surface( 50, 340, HowTo1, addSur );
-                    apply_surface( 50, 380, HowTo2, addSur );
+                    //apply_surface( 50, 380, HowTo2, addSur );
                 }
             }
 
@@ -332,11 +327,6 @@ int main( int argc, char* args[] ){
                 apply_surface( 50, 150, ButHowTo, buttonSur );
                 apply_surface( 50, 270, ButExit, buttonSur );
                 if( keystates[ SDLK_SPACE ] ){
-                    //SDL_BlitSurface( Credits, NULL, addSur, NULL );
-                    //SDL_BlitSurface( Name1, NULL, addSur, NULL );
-                    //SDL_BlitSurface( Name2, NULL, addSur, NULL );
-                    //SDL_BlitSurface( HowTo1, NULL, screen, NULL );
-                    //SDL_BlitSurface( HowTo2, NULL, screen, NULL );
                     apply_surface( 50, 340, Credits, addSur );
                     apply_surface( 150, 400, Name1, addSur );
                     apply_surface( 150, 440, Name2, addSur );
