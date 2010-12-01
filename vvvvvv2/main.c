@@ -408,7 +408,7 @@ int main( int argc, char* args[] )
         static int frame = 0;
         static int skyx = 0;
         static int skys = 2;
-        int Gol1[31][23], j, i;
+        int Gol1[32][24], j, i;
         int Xst;
         int Yst;
         int i1;
@@ -445,6 +445,7 @@ int main( int argc, char* args[] )
 
         //int fclose(FILE *lev1);
 
+        fclose(lev1);
         fclose(lev2);
 
         //Quit flag
@@ -671,7 +672,6 @@ int main( int argc, char* args[] )
                 return 1;
             }
         }
-        fclose(lev2);
 
         //Clean up
         clean_up();
