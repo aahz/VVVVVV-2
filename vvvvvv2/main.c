@@ -234,7 +234,6 @@ int menu (){
     if( load_files() != 1 ){
         return 0;
     }
-    music = Mix_LoadMUS ("Feel Good.mp3");
     Mix_PlayMusic (music, 0);
 
     //—четчик пунктов меню
@@ -459,6 +458,7 @@ int main( int argc, char* args[] )
 
         //int fclose(FILE *lev1);
 
+        fclose(lev1);
         fclose(lev2);
 
         //Quit flag
@@ -685,7 +685,6 @@ int main( int argc, char* args[] )
                 return 1;
             }
         }
-        fclose(lev2);
 
         //Clean up
         clean_up();
