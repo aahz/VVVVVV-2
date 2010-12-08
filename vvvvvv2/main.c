@@ -1,6 +1,7 @@
 #include "SDL/SDL.h"
 #include "SDL/SDL_ttf.h"
 #include "SDL/SDL_image.h"
+#include "SDL/SDL_mixer.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -55,7 +56,7 @@ SDL_Rect clipLeftU [2];
 SDL_Rect clips [4];
 SDL_Rect box;
 
-
+Mix_Music *music=NULL;
 
 //The font
 TTF_Font *font = NULL;
@@ -150,6 +151,11 @@ int init()
     //Set the window caption
     SDL_WM_SetCaption( "VVVVVV2", NULL );
 
+    if (Mix_OpenAudio(22050, MIX_DEFAULT_FORMAT, 2, 4096) == -1)
+        return 0;
+    if (Mix_Init(MIX_INIT_MP3) == -1)
+        return 0;
+
     //If everything initialized fine
     return true;
 }
@@ -167,6 +173,8 @@ int load_files()
     if( mbackground == NULL ){
         return 1;
     }
+
+    music = Mix_LoadMUS ("Feel Good.mp3");
 
     //Наличие обибок при загрузке шрифтов
     if( font == NULL ){
@@ -203,6 +211,9 @@ void clean_up()
     SDL_FreeSurface( cap );
     SDL_FreeSurface( capp );
 
+    Mix_FreeMusic (music);
+    Mix_CloseAudio();
+
     //Quit SDL_ttf
     TTF_Quit();
 
@@ -223,6 +234,8 @@ int menu (){
     if( load_files() != 1 ){
         return 0;
     }
+    music = Mix_LoadMUS ("Feel Good.mp3");
+    Mix_PlayMusic (music, 0);
 
     //Счетчик пунктов меню
     int x = 0;
@@ -400,6 +413,7 @@ int main( int argc, char* args[] )
     if(menu()==0)
     return false;
     else{
+        Mix_HaltMusic();
         static int Xor = 100;
         static int Yor = 100;
         static int Speed = 0;
@@ -445,7 +459,6 @@ int main( int argc, char* args[] )
 
         //int fclose(FILE *lev1);
 
-        fclose(lev1);
         fclose(lev2);
 
         //Quit flag
@@ -672,6 +685,7 @@ int main( int argc, char* args[] )
                 return 1;
             }
         }
+        fclose(lev2);
 
         //Clean up
         clean_up();
