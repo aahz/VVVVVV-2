@@ -57,6 +57,7 @@ SDL_Rect clips [4];
 SDL_Rect box;
 
 Mix_Music *music=NULL;
+Mix_Chunk *jump = NULL;
 
 //The font
 TTF_Font *font = NULL;
@@ -175,6 +176,7 @@ int load_files()
     }
 
     music = Mix_LoadMUS ("Feel Good.mp3");
+    jump = Mix_LoadWAV( "jump.wav" );
 
     //Наличие обибок при загрузке шрифтов
     if( font == NULL ){
@@ -211,6 +213,7 @@ void clean_up()
     SDL_FreeSurface( cap );
     SDL_FreeSurface( capp );
 
+    Mix_FreeChunk(jump);
     Mix_FreeMusic (music);
     Mix_CloseAudio();
 
@@ -570,14 +573,16 @@ int main( int argc, char* args[] )
                 //apply_surface( ( SCREEN_WIDTH - up->w ) / 2, ( SCREEN_HEIGHT / 2 - up->h ) / 2, up, screen ,NULL);
                 if(Speed==0)
                 {
+
                     if(Gol1[j][i+1]==0
                     &&(i1!=0||(Gol1[j][i]==0)))
                     {
-                    Speed-=1;
-                    velosityH=1;
-                    if(Speed<-1)
-                    {
-                        Speed=-1;
+                        Mix_PlayChannel( -1, jump, 0 );
+                        Speed-=1;
+                        velosityH=1;
+                        if(Speed<-1)
+                        {
+                            Speed=-1;
                         }
                     }
                 }
@@ -588,6 +593,10 @@ int main( int argc, char* args[] )
                 //apply_surface( ( SCREEN_WIDTH - down->w ) / 2, ( SCREEN_HEIGHT / 2 - down->h ) / 2 + ( SCREEN_HEIGHT / 2 ), down, screen , NULL);
                 if(Speed==0)
                 {
+                    if( Mix_PlayChannel( -1, jump, 0 ) == -1 )
+                    {
+                        return 1;
+                    }
                     Speed=Speed+1;
                     velosityH=0;
                     if(Speed>1)
