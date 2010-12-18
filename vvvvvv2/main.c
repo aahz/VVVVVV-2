@@ -36,7 +36,8 @@ SDL_Surface *Credits = NULL;
 SDL_Surface *Name1 = NULL;
 SDL_Surface *Name2 = NULL;
 
-SDL_Surface *background = NULL;
+SDL_Surface *level1 = NULL;
+SDL_Surface *level2 = NULL;
 SDL_Surface *capp = NULL;
 SDL_Surface *sky = NULL;
 SDL_Surface *cap = NULL;
@@ -187,16 +188,11 @@ int load_files()
         return 1;
     }
     //Load the background image
-    background = Load_Image( "level1.png" );
+    level1 = Load_Image( "level1.png" );
+    level2 = Load_Image( "level2.png" );
     sky = Load_Image( "sky.png" );
     capp = Load_Image( "cap!.png" );
     cap = Load_Image( "Cap2.png" );
-
-    //If there was a problem in loading the background
-    if( background == NULL )
-    {
-        return false;
-    }
 
     //If everything loaded fine
     return true;
@@ -205,7 +201,8 @@ int load_files()
 void clean_up()
 {
     //Free the surfaces
-    SDL_FreeSurface( background );
+    SDL_FreeSurface( level1 );
+    SDL_FreeSurface( level2 );
     SDL_FreeSurface( up );
     SDL_FreeSurface( down );
     SDL_FreeSurface( left );
@@ -429,40 +426,7 @@ int main( int argc, char* args[] )
         int Yst;
         int i1;
         int j1;
-
-        FILE *lev1;
-        FILE *lev2;
-        if ((lev1 = fopen("level1.txt", "r")) == NULL){
-            puts("Can not open lev1.txt!\n");
-            return false;
-        }
-
-        if ((lev2 = fopen("level2.txt", "w")) == NULL){
-            puts("Can not open lev1.txt!\n");
-            return false;
-        }
-
-
-
-        for (i=0;i<=23;i++){
-            for(j=0;j<=31;j++){
-                fscanf(lev1, "%1d ", &Gol1[j][i]);
-                //fprintf(lev2, "%1d ", &Gol1[i][j]);
-            }
-            //fputs("\n", lev2);
-        }
-        for (i=0;i<=23;i++){
-            for(j=0;j<=31;j++){
-                //fscanf(lev1, "%1d ", &Gol1[i][j]);
-                fprintf(lev2, "%1d ", Gol1[j][i]);
-            }
-            fputs("\n", lev2);
-        }
-
-        //int fclose(FILE *lev1);
-
-        fclose(lev1);
-        fclose(lev2);
+        int l=1;
 
         //Quit flag
         int quit = false;
@@ -536,169 +500,236 @@ int main( int argc, char* args[] )
         //While the user hasn't quit
         while( quit == false )
         {
-            //While there's events to handle
-            while( SDL_PollEvent( &event ) )
-            {
-                //If the user has Xed out the window
-                if( event.type == SDL_QUIT )
-                {
-                    //Quit the program
-                    quit = true;
+            do{
+                FILE *lev1;
+                FILE *lev1d;
+                FILE *lev2;
+                if ((lev1 = fopen("level1.txt", "r")) == NULL){
+                    puts("Can not open lev1.txt!\n");
+                    return false;
                 }
-            }
-            skyx = skyx - 3*skys;
-            if (skyx < -600)
-            {
-                skyx=0;
-            }
-            //Apply the background
-            apply_surface( skyx, 0, sky, screen , NULL);
-            apply_surface( 0, 0, background, screen , NULL);
 
-            //Get the keystates
-            Uint8 *keystates = SDL_GetKeyState( NULL );
+                if ((lev1d = fopen("level1debug.txt", "w")) == NULL){
+                    puts("Can not open level1debug.txt!\n");
+                    return false;
+                }
 
-            j=Xor/20;
-            i=Yor/20;
-            j1=Xor%20;
-            i1=Yor%20;
+                if ((lev2 = fopen("level2.txt", "r")) == NULL){
+                    puts("Can not open level2.txt!\n");
+                    return false;
+                }
 
 
-            //If up is pressed
-            if( keystates[ SDLK_ESCAPE ] )
-                return false;
 
-            if( keystates[ SDLK_w ] || keystates[ SDLK_UP ] )
-            {
-                //apply_surface( ( SCREEN_WIDTH - up->w ) / 2, ( SCREEN_HEIGHT / 2 - up->h ) / 2, up, screen ,NULL);
-                if(Speed==0)
+                for (i=0;i<=23;i++){
+                    for(j=0;j<=31;j++){
+                        if(l==1)
+                        fscanf(lev1, "%1d ", &Gol1[j][i]);
+                        if(l==2)
+                        fscanf(lev2, "%1d", &Gol1[j][i]);
+                        //fprintf(lev2, "%1d ", &Gol1[i][j]);
+                    }
+                    //fputs("\n", lev2);
+                }
+                for (i=0;i<=23;i++){
+                    for(j=0;j<=31;j++){
+                        //fscanf(lev1, "%1d ", &Gol1[i][j]);
+                        fprintf(lev1d, "%1d ", Gol1[j][i]);
+                    }
+                    fputs("\n", lev1d);
+                }
+
+                //int fclose(FILE *lev1);
+
+                fclose(lev1);
+                fclose(lev1d);
+                fclose(lev2);
+
+                    //While there's events to handle
+                while( SDL_PollEvent( &event ) )
                 {
-
-                    if(Gol1[j][i+1]==0
-                    &&(i1!=0||(Gol1[j][i]==0)))
+                    //If the user has Xed out the window
+                    if( event.type == SDL_QUIT )
                     {
-                        Mix_PlayChannel( -1, jump, 0 );
-                        Speed-=1;
-                        velosityH=1;
-                        if(Speed<-1)
+                        //Quit the program
+                        quit = true;
+                    }
+                }
+                skyx = skyx - 3*skys;
+                if (skyx < -600)
+                {
+                    skyx=0;
+                }
+                //Apply the background
+                apply_surface( skyx, 0, sky, screen , NULL);
+                if(l==1)
+                    apply_surface( 0, 0, level1, screen , NULL);
+                if(l==2)
+                    apply_surface( 0, 0, level2, screen , NULL);
+                //Get the keystates
+                Uint8 *keystates = SDL_GetKeyState( NULL );
+
+                j=Xor/20;
+                i=Yor/20;
+                j1=Xor%20;
+                i1=Yor%20;
+
+
+                //If up is pressed
+                if( keystates[ SDLK_ESCAPE ] )
+                    return false;
+
+                if( keystates[ SDLK_w ] || keystates[ SDLK_UP ] )
+                {
+                    //apply_surface( ( SCREEN_WIDTH - up->w ) / 2, ( SCREEN_HEIGHT / 2 - up->h ) / 2, up, screen ,NULL);
+                    if(Speed==0)
+                    {
+
+                        if(Gol1[j][i+1]==0
+                        &&(i1!=0||(Gol1[j][i]==0)))
                         {
-                            Speed=-1;
+                            Speed-=1;
+                            velosityH=1;
+                            if(Speed<-1)
+                            {
+                                Speed=-1;
+                            }
+                            if(Gol1[j][i-1]==0){
+                                Mix_PlayChannel( -1, jump, 0 );
+                            }
                         }
                     }
                 }
-            }
-            //If down is pressed
-            if( keystates[ SDLK_s ] || keystates[ SDLK_DOWN ] )
-            {
-                //apply_surface( ( SCREEN_WIDTH - down->w ) / 2, ( SCREEN_HEIGHT / 2 - down->h ) / 2 + ( SCREEN_HEIGHT / 2 ), down, screen , NULL);
-                if(Speed==0)
+                //If down is pressed
+                if( keystates[ SDLK_s ] || keystates[ SDLK_DOWN ] )
                 {
-                    if( Mix_PlayChannel( -1, jump, 0 ) == -1 )
+                    //apply_surface( ( SCREEN_WIDTH - down->w ) / 2, ( SCREEN_HEIGHT / 2 - down->h ) / 2 + ( SCREEN_HEIGHT / 2 ), down, screen , NULL);
+                    if(Speed==0)
+                    {
+                        if(Gol1[j][i+1]==0
+                        &&(i1!=0||(Gol1[j][i]==0)))
+                        {
+                            Speed=Speed+1;
+                            velosityH=0;
+                            if(Speed>1)
+                            {
+                            Speed=1;
+                            }
+                            if(Gol1[j][i+3]==0){
+                                Mix_PlayChannel( -1, jump, 0 );
+                            }
+                        }
+                    }
+                }
+                //If left is pressed
+                if( keystates[ SDLK_a ] || keystates[ SDLK_LEFT ] )
+                {
+                    if(Gol1[j][i+1]==0
+                        &&(j1!=0||(Gol1[j-1][i+1]==0)))
+                        {
+                    //apply_surface( ( SCREEN_WIDTH / 2 - left->w ) / 2, ( SCREEN_HEIGHT - left->h ) / 2, left, screen ,NULL);
+                    if(Speed==0)
+                    Xor=Xor-4;
+                    if(Speed==-1)
+                        if((j1!=0||(Gol1[j-1][i-1]==0&&Gol1[j-1][i]==0)))
+                            Xor=Xor-4;
+                    if(Speed==1)
+                        if(j1!=0||Gol1[j-1][i+2]==0)
+                            Xor=Xor-4;
+                    if(Xor%50>=0&&Xor%50<=24)
+                    {
+                        frame=1;
+                    }else
+                    {
+                        frame=0;
+                    }
+                    velosityW=0;
+                    }
+                    if(j1==0&&Gol1[j-1][i]==0&&velosityH==1)
+                        Speed=-1;
+                    if(Gol1[j-1][i]==0&&velosityH==0)
+                        Speed=1;
+                }
+
+                //If right is pressed
+                if( keystates[ SDLK_d ] || keystates[ SDLK_RIGHT ] )
+                {
+                    if(Gol1[j][i+1]==0
+                        &&(j1!=0||(Gol1[j+1][i+1]==0)))
+                            {
+                    //apply_surface( ( SCREEN_WIDTH / 2 - right->w ) / 2 + ( SCREEN_WIDTH / 2 ), ( SCREEN_HEIGHT - right->h ) / 2, right, screen ,NULL);
+                    if(Speed==0)
+                    Xor=Xor+4;
+                    if(Speed==-1)
+                        if((j1!=0||(Gol1[j+1][i-1]==0&&Gol1[j+1][i]==0)))
+                            Xor=Xor+4;
+                    if(Speed==1)
+                        if(j1!=0||Gol1[j+1][i+2]==0)
+                            Xor=Xor+4;
+                    if((Xor%51>=0&&Xor%51<=24))
+                    {
+                        frame=1;
+                    }else
+                    {
+                        frame=0;
+                    }
+                    velosityW=1;
+                    }
+                    if(Gol1[j+1][i]==0&&velosityH==1)
+                        Speed=-1;
+                    if(Gol1[j+1][i]==0&&velosityH==0)
+                        Speed=1;
+                    }
+                    if(Speed==1){
+                        if(Gol1[j][i+2]==1)
+                        Speed=0;
+                    }else if(Speed==-1) {
+                        if(Gol1[j][i]==1)
+                        Speed=0;
+                    }
+
+
+                    Yor=Yor+5*Speed;
+
+                    if(l==1)
+                        if(Xor>=620)
+                            if(Yor>=195&&Yor<=320){
+                                l=2;
+                                Xor=0;
+                            }
+
+                    /*if(l==2)
+                    return false;*/
+
+                    if( velosityH==0)
+                    {
+                        if( velosityW==1)
+                        {
+                            apply_surface (Xor, Yor, cap, screen, &clipRightD[frame]);
+                        } else
+                        {
+                        apply_surface (Xor, Yor, cap, screen, &clipLeftD[frame]);
+                        }
+                    } else if( velosityH==1)
+                    {
+                        if( velosityW==1)
+                        {
+                        apply_surface (Xor, Yor, cap, screen, &clipRightU[frame]);
+                        } else
+                        {
+                        apply_surface (Xor, Yor, cap, screen, &clipLeftU[frame]);
+                        }
+                    }
+                    frame=0;
+                    //Update the screen
+                    if( SDL_Flip( screen ) == -1 )
                     {
                         return 1;
                     }
-                    Speed=Speed+1;
-                    velosityH=0;
-                    if(Speed>1)
-                    {
-                    Speed=1;
-                    }
-                }
-            }
-            //If left is pressed
-            if( keystates[ SDLK_a ] || keystates[ SDLK_LEFT ] )
-            {
-                if(Gol1[j][i+1]==0
-                    &&(j1!=0||(Gol1[j-1][i+1]==0)))
-                    {
-                //apply_surface( ( SCREEN_WIDTH / 2 - left->w ) / 2, ( SCREEN_HEIGHT - left->h ) / 2, left, screen ,NULL);
-                Xor=Xor-4;
-                if(Xor%50>=0&&Xor%50<=24)
-                {
-                    frame=1;
-                }else
-                {
-                    frame=0;
-                }
-                velosityW=0;
-                }
-                if(j1==0&&Gol1[j-1][i]==0&&velosityH==1)
-                    Speed=-1;
-                if(Gol1[j-1][i]==0&&velosityH==0)
-                    Speed=1;
-            }
-
-            //If right is pressed
-            if( keystates[ SDLK_d ] || keystates[ SDLK_RIGHT ] )
-            {
-                if(Gol1[j][i+1]==0
-                    &&(j1!=0||(Gol1[j+1][i+1]==0)))
-                        {
-                //apply_surface( ( SCREEN_WIDTH / 2 - right->w ) / 2 + ( SCREEN_WIDTH / 2 ), ( SCREEN_HEIGHT - right->h ) / 2, right, screen ,NULL);
-                if(Speed==0)
-                Xor=Xor+4;
-                if(Speed==-1)
-                    if((j1!=0||(Gol1[j+1][i-1]==0&&Gol1[j+1][i]==0)))
-                        Xor=Xor+4;
-                if(Speed==1)
-                    if(j1!=0||Gol1[j+1][i+2]==0)
-                        Xor=Xor+4;
-                if((Xor%51>=0&&Xor%51<=24))
-                {
-                    frame=1;
-                }else
-                {
-                    frame=0;
-                }
-                velosityW=1;
-                }
-                if(Gol1[j+1][i]==0&&velosityH==1)
-                    Speed=-1;
-                if(Gol1[j+1][i]==0&&velosityH==0)
-                    Speed=1;
-            }
-            if(Speed==1){
-                if(Gol1[j][i+2]==1)
-                Speed=0;
-            }else if(Speed==-1) {
-                if(Gol1[j][i]==1)
-                Speed=0;
-            }
-
-
-            Yor=Yor+5*Speed;
-
-            if( velosityH==0)
-            {
-                if( velosityW==1)
-                {
-                apply_surface (Xor, Yor, cap, screen, &clipRightD[frame]);
-                } else
-                {
-                apply_surface (Xor, Yor, cap, screen, &clipLeftD[frame]);
-                }
-            } else if( velosityH==1)
-            {
-                if( velosityW==1)
-                {
-                apply_surface (Xor, Yor, cap, screen, &clipRightU[frame]);
-                } else
-                {
-                apply_surface (Xor, Yor, cap, screen, &clipLeftU[frame]);
-                }
-            }
-            frame=0;
-            //Update the screen
-            if( SDL_Flip( screen ) == -1 )
-            {
-                return 1;
-            }
+                }while(l!=5);
         }
-
-        //Clean up
         clean_up();
-
         return 0;
-    }
-    return 0;
+        }
+        return 0;
 }
