@@ -38,6 +38,8 @@ SDL_Surface *Name2 = NULL;
 
 SDL_Surface *level1 = NULL;
 SDL_Surface *level2 = NULL;
+SDL_Surface *level3 = NULL;
+SDL_Surface *level4 = NULL;
 SDL_Surface *capp = NULL;
 SDL_Surface *sky = NULL;
 SDL_Surface *cap = NULL;
@@ -190,6 +192,8 @@ int load_files()
     //Load the background image
     level1 = Load_Image( "level1.png" );
     level2 = Load_Image( "level2.png" );
+    level3 = Load_Image( "level3.png" );
+    level4 = Load_Image( "level4.png" );
     sky = Load_Image( "sky.png" );
     capp = Load_Image( "cap!.png" );
     cap = Load_Image( "Cap2.png" );
@@ -203,6 +207,8 @@ void clean_up()
     //Free the surfaces
     SDL_FreeSurface( level1 );
     SDL_FreeSurface( level2 );
+    SDL_FreeSurface( level3 );
+    SDL_FreeSurface( level4 );
     SDL_FreeSurface( up );
     SDL_FreeSurface( down );
     SDL_FreeSurface( left );
@@ -504,6 +510,8 @@ int main( int argc, char* args[] )
                 FILE *lev1;
                 FILE *lev1d;
                 FILE *lev2;
+                FILE *lev3;
+                FILE *lev4;
                 if ((lev1 = fopen("level1.txt", "r")) == NULL){
                     puts("Can not open lev1.txt!\n");
                     return false;
@@ -518,8 +526,14 @@ int main( int argc, char* args[] )
                     puts("Can not open level2.txt!\n");
                     return false;
                 }
-
-
+                if ((lev3 = fopen("level3.txt", "r")) == NULL){
+                    puts("Can not open level3.txt!\n");
+                    return false;
+                }
+                if ((lev4 = fopen("level4.txt", "r")) == NULL){
+                    puts("Can not open level4.txt!\n");
+                    return false;
+                }
 
                 for (i=0;i<=23;i++){
                     for(j=0;j<=31;j++){
@@ -527,6 +541,10 @@ int main( int argc, char* args[] )
                         fscanf(lev1, "%1d ", &Gol1[j][i]);
                         if(l==2)
                         fscanf(lev2, "%1d", &Gol1[j][i]);
+                        if(l==3)
+                        fscanf(lev3, "%1d", &Gol1[j][i]);
+                        if(l==4)
+                        fscanf(lev4, "%1d", &Gol1[j][i]);
                         //fprintf(lev2, "%1d ", &Gol1[i][j]);
                     }
                     //fputs("\n", lev2);
@@ -544,6 +562,8 @@ int main( int argc, char* args[] )
                 fclose(lev1);
                 fclose(lev1d);
                 fclose(lev2);
+                fclose(lev3);
+                fclose(lev4);
 
                     //While there's events to handle
                 while( SDL_PollEvent( &event ) )
@@ -566,6 +586,10 @@ int main( int argc, char* args[] )
                     apply_surface( 0, 0, level1, screen , NULL);
                 if(l==2)
                     apply_surface( 0, 0, level2, screen , NULL);
+                if(l==3)
+                    apply_surface( 0, 0, level3, screen , NULL);
+                if(l==4)
+                    apply_surface( 0, 0, level4, screen , NULL);
                 //Get the keystates
                 Uint8 *keystates = SDL_GetKeyState( NULL );
 
@@ -636,6 +660,23 @@ int main( int argc, char* args[] )
                     if(Speed==1)
                         if(j1!=0||Gol1[j-1][i+2]==0)
                             Xor=Xor-4;
+                    if(l==2)
+                        if(Xor<=0){
+                            if(Yor>=195&&Yor<=320){
+                                l=1;
+                                Xor=620;
+                            }
+                            if(Yor>=95&&Yor<=160){
+                                l=3;
+                                Xor=620;
+                            }
+                        }
+                    if(l==4)
+                        if(Xor<=0)
+                            if(Yor>=360&&Yor<=420){
+                                l=3;
+                                Xor=620;
+                            }
                     if(Xor%50>=0&&Xor%50<=24)
                     {
                         frame=1;
@@ -666,6 +707,24 @@ int main( int argc, char* args[] )
                     if(Speed==1)
                         if(j1!=0||Gol1[j+1][i+2]==0)
                             Xor=Xor+4;
+                    if(l==1)
+                        if(Xor>=620)
+                            if(Yor>=195&&Yor<=320){
+                                l=2;
+                                Xor=0;
+                            }
+                    if(l==3)
+                        if(Xor>=620){
+                            if(Yor>=95&&Yor<=160){
+                                l=2;
+                                Xor=0;
+                            }
+                            if(Yor>=360&&Yor<=420){
+                                l=4;
+                                Xor=0;
+                            }
+                        }
+
                     if((Xor%51>=0&&Xor%51<=24))
                     {
                         frame=1;
@@ -691,14 +750,7 @@ int main( int argc, char* args[] )
 
                     Yor=Yor+5*Speed;
 
-                    if(l==1)
-                        if(Xor>=620)
-                            if(Yor>=195&&Yor<=320){
-                                l=2;
-                                Xor=0;
-                            }
-
-                    /*if(l==2)
+                    /*if(l==3)
                     return false;*/
 
                     if( velosityH==0)
