@@ -49,6 +49,7 @@ SDL_Surface *down = NULL;
 SDL_Surface *left = NULL;
 SDL_Surface *right = NULL;
 SDL_Surface *screen = NULL;
+SDL_Surface *dieshow = NULL;
 
 //The event structure
 SDL_Event event;
@@ -436,6 +437,7 @@ int main( int argc, char* args[] )
     return false;
     else{
         Mix_HaltMusic();
+        dieshow = TTF_RenderText_Solid( font, "DEAD", textColor );
         static int Xor = 100;
         static int Yor = 100;
         static int Speed = 0;
@@ -451,6 +453,7 @@ int main( int argc, char* args[] )
         int i1;
         int j1;
         int l=1;
+        int die=0;
 
         //Quit flag
         int quit = false;
@@ -675,8 +678,8 @@ int main( int argc, char* args[] )
                     if(Speed==0)
                     {
 
-                        if(Gol1[j][i+1]==0
-                        &&(i1!=0||(Gol1[j][i]==0)))
+                        if((Gol1[j][i+1]!=1
+                        &&(i1!=0||(Gol1[j][i]!=1)))&&die==0)
                         {
                             Speed-=1;
                             velosityH=1;
@@ -684,7 +687,7 @@ int main( int argc, char* args[] )
                             {
                                 Speed=-1;
                             }
-                            if(Gol1[j][i-1]==0){
+                            if(Gol1[j][i-1]!=1){
                                 Mix_PlayChannel( -1, jump, 0 );
                             }
                         }
@@ -696,8 +699,8 @@ int main( int argc, char* args[] )
                     //apply_surface( ( SCREEN_WIDTH - down->w ) / 2, ( SCREEN_HEIGHT / 2 - down->h ) / 2 + ( SCREEN_HEIGHT / 2 ), down, screen , NULL);
                     if(Speed==0)
                     {
-                        if(Gol1[j][i+1]==0
-                        &&(i1!=0||(Gol1[j][i]==0)))
+                        if((Gol1[j][i+1]!=1
+                        &&(i1!=0||(Gol1[j][i]!=1)))&&die==0)
                         {
                             Speed=Speed+1;
                             velosityH=0;
@@ -705,7 +708,7 @@ int main( int argc, char* args[] )
                             {
                             Speed=1;
                             }
-                            if(Gol1[j][i+3]==0){
+                            if(Gol1[j][i+3]!=1){
                                 Mix_PlayChannel( -1, jump, 0 );
                             }
                         }
@@ -714,17 +717,17 @@ int main( int argc, char* args[] )
                 //If left is pressed
                 if( keystates[ SDLK_a ] || keystates[ SDLK_LEFT ] )
                 {
-                    if(Gol1[j][i+1]==0
-                        &&(j1!=0||(Gol1[j-1][i+1]==0)))
+                    if((Gol1[j][i+1]!=1
+                        &&(j1!=0||(Gol1[j-1][i+1]!=1)))&&die==0)
                         {
                     //apply_surface( ( SCREEN_WIDTH / 2 - left->w ) / 2, ( SCREEN_HEIGHT - left->h ) / 2, left, screen ,NULL);
                     if(Speed==0)
                     Xor=Xor-4;
                     if(Speed==-1)
-                        if((j1!=0||(Gol1[j-1][i-1]==0&&Gol1[j-1][i]==0)))
+                        if((j1!=0||(Gol1[j-1][i-1]!=1&&Gol1[j-1][i]!=1)))
                             Xor=Xor-4;
                     if(Speed==1)
-                        if(j1!=0||Gol1[j-1][i+2]==0)
+                        if(j1!=0||Gol1[j-1][i+2]!=1)
                             Xor=Xor-4;
                     if(l==2)
                         if(Xor<=0){
@@ -752,26 +755,26 @@ int main( int argc, char* args[] )
                     }
                     velosityW=0;
                     }
-                    if(j1==0&&Gol1[j-1][i]==0&&velosityH==1)
+                    if(j1==0&&Gol1[j-1][i]!=1&&velosityH==1)
                         Speed=-1;
-                    if(Gol1[j-1][i]==0&&velosityH==0)
+                    if(Gol1[j-1][i]!=1&&velosityH==0)
                         Speed=1;
                 }
 
                 //If right is pressed
                 if( keystates[ SDLK_d ] || keystates[ SDLK_RIGHT ] )
                 {
-                    if(Gol1[j][i+1]==0
-                        &&(j1!=0||(Gol1[j+1][i+1]==0)))
+                    if((Gol1[j][i+1]!=1
+                        &&(j1!=0||(Gol1[j+1][i+1]!=1)))&&die==0)
                             {
                     //apply_surface( ( SCREEN_WIDTH / 2 - right->w ) / 2 + ( SCREEN_WIDTH / 2 ), ( SCREEN_HEIGHT - right->h ) / 2, right, screen ,NULL);
                     if(Speed==0)
                     Xor=Xor+4;
                     if(Speed==-1)
-                        if((j1!=0||(Gol1[j+1][i-1]==0&&Gol1[j+1][i]==0)))
+                        if((j1!=0||(Gol1[j+1][i-1]!=1&&Gol1[j+1][i]!=1)))
                             Xor=Xor+4;
                     if(Speed==1)
-                        if(j1!=0||Gol1[j+1][i+2]==0)
+                        if(j1!=0||Gol1[j+1][i+2]!=1)
                             Xor=Xor+4;
                     if(l==1)
                         if(Xor>=620)
@@ -800,9 +803,9 @@ int main( int argc, char* args[] )
                     }
                     velosityW=1;
                     }
-                    if(Gol1[j+1][i]==0&&velosityH==1)
+                    if(Gol1[j+1][i]!=1&&velosityH==1)
                         Speed=-1;
-                    if(Gol1[j+1][i]==0&&velosityH==0)
+                    if(Gol1[j+1][i]!=1&&velosityH==0)
                         Speed=1;
                     }
                     if(Speed==1){
@@ -816,6 +819,20 @@ int main( int argc, char* args[] )
 
                     Yor=Yor+5*Speed;
 
+                    if(Gol1[j][i]>=2||Gol1[j][i+1]>=2||(j1!=0&&(Gol1[j+1][i]>=2||Gol1[j+1][i+1]>=2))){
+                        die=1;
+                        apply_surface( SCREEN_WIDTH/2-dieshow->w/2, SCREEN_HEIGHT/2-dieshow->h/2, dieshow, buttonSur , NULL);
+                        Yst=1;
+                        Xst=Xst+Yst;
+                    }
+
+                    if(Xst>=30){
+                        die=0;
+                        Xst=0;
+                        Yst=0;
+                        Xor=100;
+                        Yor=100;
+                        }
                     /*if(l==3)
                     return false;*/
 
