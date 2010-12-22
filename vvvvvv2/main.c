@@ -43,6 +43,7 @@ SDL_Surface *level4 = NULL;
 SDL_Surface *capp = NULL;
 SDL_Surface *sky = NULL;
 SDL_Surface *cap = NULL;
+SDL_Surface *death = NULL;
 SDL_Surface *up = NULL;
 SDL_Surface *down = NULL;
 SDL_Surface *left = NULL;
@@ -57,6 +58,7 @@ SDL_Rect clipLeftD [2];
 SDL_Rect clipRightU [2];
 SDL_Rect clipLeftU [2];
 SDL_Rect clips [4];
+SDL_Rect clipdeath [4];
 SDL_Rect box;
 
 Mix_Music *music=NULL;
@@ -197,6 +199,7 @@ int load_files()
     sky = Load_Image( "sky.png" );
     capp = Load_Image( "cap!.png" );
     cap = Load_Image( "Cap2.png" );
+    death = Load_Image( "IGLA.png" );
 
     //If everything loaded fine
     return true;
@@ -215,6 +218,7 @@ void clean_up()
     SDL_FreeSurface( right );
     SDL_FreeSurface( cap );
     SDL_FreeSurface( capp );
+    SDL_FreeSurface( death );
 
     Mix_FreeChunk(jump);
     Mix_FreeMusic (music);
@@ -413,6 +417,19 @@ int menu (){
     return 0;
 }
 
+void DrawIMG1(SDL_Surface *img, int x, int y, int w, int h, int sx, int sy)
+{
+    SDL_Rect dest;
+    dest.x = x;
+    dest.y = y;
+    SDL_Rect src;
+    src.x = sx;
+    src.y = sy;
+    src.w = w;
+    src.h = h;
+    SDL_BlitSurface(img, &src, screen, &dest);
+}
+
 int main( int argc, char* args[] )
 {
     if(menu()==0)
@@ -428,6 +445,7 @@ int main( int argc, char* args[] )
         static int skyx = 0;
         static int skys = 2;
         int Gol1[32][24], j, i;
+        int z2=0,y2=0;
         int Xst;
         int Yst;
         int i1;
@@ -448,6 +466,26 @@ int main( int argc, char* args[] )
         {
             return 1;
         }
+        //0-up 1-left 2-right 3-down
+        clipdeath[ 0 ].x = 0;
+        clipdeath[ 0 ].y = 0;
+        clipdeath[ 0 ].w = 20;
+        clipdeath[ 0 ].h = 20;
+
+        clipdeath[ 1 ].x = 20;
+        clipdeath[ 1 ].y = 0;
+        clipdeath[ 1 ].w = 20;
+        clipdeath[ 1 ].h = 20;
+
+        clipdeath[ 2 ].x = 0;
+        clipdeath[ 2 ].y = 20;
+        clipdeath[ 2 ].w = 20;
+        clipdeath[ 2 ].h = 20;
+
+        clipdeath[ 3 ].x = 20;
+        clipdeath[ 3 ].y = 20;
+        clipdeath[ 3 ].w = 20;
+        clipdeath[ 3 ].h = 20;
 
         //Clip range for the top left
         clipRightD[ 0 ].x = 0;
@@ -549,6 +587,7 @@ int main( int argc, char* args[] )
                     }
                     //fputs("\n", lev2);
                 }
+
                 for (i=0;i<=23;i++){
                     for(j=0;j<=31;j++){
                         //fscanf(lev1, "%1d ", &Gol1[i][j]);
@@ -590,6 +629,33 @@ int main( int argc, char* args[] )
                     apply_surface( 0, 0, level3, screen , NULL);
                 if(l==4)
                     apply_surface( 0, 0, level4, screen , NULL);
+
+                for (i=0;i<=23;i++){
+                    for(j=0;j<=31;j++){
+                        if (Gol1[j][i] == 2){
+                            apply_surface (z2+2, y2+2, death, screen, &clipdeath[0]);
+                            z2=z2+20;
+                        }
+                        else if (Gol1[j][i] == 3){
+                            apply_surface (z2+2, y2-2, death, screen, &clipdeath[1]);
+                            z2=z2+20;
+                        }
+                        else if (Gol1[j][i] == 4){
+                            apply_surface (z2+2, y2-4, death, screen, &clipdeath[2]);
+                            z2=z2+20;
+                        }
+                        else if (Gol1[j][i] == 5){
+                            apply_surface (z2+2, y2-4, death, screen, &clipdeath[3]);
+                            z2=z2+20;
+                        }
+                        else z2=z2+20;
+                    }
+                    z2=0;
+                    y2=y2+20;
+                }
+                y2=0;
+
+
                 //Get the keystates
                 Uint8 *keystates = SDL_GetKeyState( NULL );
 
@@ -673,7 +739,7 @@ int main( int argc, char* args[] )
                         }
                     if(l==4)
                         if(Xor<=0)
-                            if(Yor>=360&&Yor<=420){
+                            if(Yor>=355&&Yor<=420){
                                 l=3;
                                 Xor=620;
                             }
@@ -719,7 +785,7 @@ int main( int argc, char* args[] )
                                 l=2;
                                 Xor=0;
                             }
-                            if(Yor>=360&&Yor<=420){
+                            if(Yor>=355&&Yor<=420){
                                 l=4;
                                 Xor=0;
                             }
@@ -740,10 +806,10 @@ int main( int argc, char* args[] )
                         Speed=1;
                     }
                     if(Speed==1){
-                        if(Gol1[j][i+2]==1)
+                        if(Gol1[j][i+2]==1||(j1!=0&&Gol1[j+1][i+2]==1))
                         Speed=0;
                     }else if(Speed==-1) {
-                        if(Gol1[j][i]==1)
+                        if(Gol1[j][i]==1||(j1!=0&&Gol1[j+1][i]==1))
                         Speed=0;
                     }
 
