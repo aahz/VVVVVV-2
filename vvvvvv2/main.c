@@ -448,8 +448,8 @@ int main( int argc, char* args[] )
         static int skys = 2;
         int Gol1[32][24], j, i;
         int z2=0,y2=0;
-        int Xst;
-        int Yst;
+        int Dtime;
+        int Dspeed;
         int i1;
         int j1;
         int l=1;
@@ -729,7 +729,7 @@ int main( int argc, char* args[] )
                     if(Speed==1)
                         if(j1!=0||Gol1[j-1][i+2]!=1)
                             Xor=Xor-4;
-                    if(l==2)
+                    /*if(l==2)
                         if(Xor<=0){
                             if(Yor>=195&&Yor<=320){
                                 l=1;
@@ -745,7 +745,7 @@ int main( int argc, char* args[] )
                             if(Yor>=355&&Yor<=420){
                                 l=3;
                                 Xor=620;
-                            }
+                            }*/
                     if(Xor%50>=0&&Xor%50<=24)
                     {
                         frame=1;
@@ -755,7 +755,7 @@ int main( int argc, char* args[] )
                     }
                     velosityW=0;
                     }
-                    if(j1==0&&Gol1[j-1][i]!=1&&velosityH==1)
+                    if(Gol1[j-1][i]!=1&&velosityH==1)
                         Speed=-1;
                     if(Gol1[j-1][i]!=1&&velosityH==0)
                         Speed=1;
@@ -765,7 +765,7 @@ int main( int argc, char* args[] )
                 if( keystates[ SDLK_d ] || keystates[ SDLK_RIGHT ] )
                 {
                     if((Gol1[j][i+1]!=1
-                        &&(j1!=0||(Gol1[j+1][i+1]!=1)))&&die==0)
+                        &&(j1!=0||Gol1[j+1][i+1]!=1))&&die==0)
                             {
                     //apply_surface( ( SCREEN_WIDTH / 2 - right->w ) / 2 + ( SCREEN_WIDTH / 2 ), ( SCREEN_HEIGHT - right->h ) / 2, right, screen ,NULL);
                     if(Speed==0)
@@ -776,13 +776,7 @@ int main( int argc, char* args[] )
                     if(Speed==1)
                         if(j1!=0||Gol1[j+1][i+2]!=1)
                             Xor=Xor+4;
-                    if(l==1)
-                        if(Xor>=620)
-                            if(Yor>=195&&Yor<=320){
-                                l=2;
-                                Xor=0;
-                            }
-                    if(l==3)
+                    /*if(l==3)
                         if(Xor>=620){
                             if(Yor>=95&&Yor<=160){
                                 l=2;
@@ -792,7 +786,7 @@ int main( int argc, char* args[] )
                                 l=4;
                                 Xor=0;
                             }
-                        }
+                        }*/
 
                     if((Xor%51>=0&&Xor%51<=24))
                     {
@@ -815,24 +809,39 @@ int main( int argc, char* args[] )
                         if(Gol1[j][i]==1||(j1!=0&&Gol1[j+1][i]==1))
                         Speed=0;
                     }
+                    if((Gol1[j][i]>=2&&Gol1[j][i]<=5)||(Gol1[j][i+1]>=2&&Gol1[j][i+1]<=5)||(j1!=0&&((Gol1[j+1][i]>=2&&Gol1[j+1][i]<=5)||(Gol1[j+1][i+1]>=2&&Gol1[j+1][i+1]<=5)))){
+                        die=1;
+                        apply_surface( SCREEN_WIDTH/2-dieshow->w/2, SCREEN_HEIGHT/2-dieshow->h/2, dieshow, buttonSur , NULL);
+                        Dtime=Dtime+Dspeed;
+                        Dspeed=1;
+                        Speed=0;
+                    }
 
+                    if(Dtime>=100){
+                        die=0;
+                        Dtime=0;
+                        Dspeed=0;
+                        Xor=100;
+                        Yor=100;
+                        velosityH=0;
+                        }
 
                     Yor=Yor+5*Speed;
 
-                    if(Gol1[j][i]>=2||Gol1[j][i+1]>=2||(j1!=0&&(Gol1[j+1][i]>=2||Gol1[j+1][i+1]>=2))){
-                        die=1;
-                        apply_surface( SCREEN_WIDTH/2-dieshow->w/2, SCREEN_HEIGHT/2-dieshow->h/2, dieshow, buttonSur , NULL);
-                        Yst=1;
-                        Xst=Xst+Yst;
+                    if(Gol1[j][i]==6||Gol1[j][i+1]==6){
+                            l=l+1;
+                            if(Xor>=620)
+                                Xor=20;
+                            else Xor=610;
+                    }
+                    if(Gol1[j][i]==7||Gol1[j][i+1]==7){
+                            l=l-1;
+                            if(Xor>=620)
+                                Xor=20;
+                            else Xor=610;
                     }
 
-                    if(Xst>=30){
-                        die=0;
-                        Xst=0;
-                        Yst=0;
-                        Xor=100;
-                        Yor=100;
-                        }
+
                     /*if(l==3)
                     return false;*/
 
