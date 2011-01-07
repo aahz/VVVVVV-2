@@ -40,6 +40,7 @@ SDL_Surface *level1 = NULL;
 SDL_Surface *level2 = NULL;
 SDL_Surface *level3 = NULL;
 SDL_Surface *level4 = NULL;
+SDL_Surface *level5 = NULL;
 SDL_Surface *capp = NULL;
 SDL_Surface *sky = NULL;
 SDL_Surface *cap = NULL;
@@ -181,7 +182,11 @@ int load_files()
         return 1;
     }
 
-    music = Mix_LoadMUS ("Feel Good.mp3");
+    music = Mix_LoadMUS ("Feel Good.wav");
+
+    if( music == NULL )
+        return 1;
+
     jump = Mix_LoadWAV( "jump.wav" );
 
     //Наличие обибок при загрузке шрифтов
@@ -197,6 +202,7 @@ int load_files()
     level2 = Load_Image( "level2.png" );
     level3 = Load_Image( "level3.png" );
     level4 = Load_Image( "level4.png" );
+    level5 = Load_Image( "level5.png" );
     sky = Load_Image( "sky.png" );
     capp = Load_Image( "cap!.png" );
     cap = Load_Image( "Cap2.png" );
@@ -438,8 +444,8 @@ int main( int argc, char* args[] )
     else{
         Mix_HaltMusic();
         dieshow = TTF_RenderText_Solid( font, "DEAD", textColor );
-        static int Xor = 100;
-        static int Yor = 100;
+        static int Xor=100, Xd;
+        static int Yor=100, Yd;
         static int Speed = 0;
         static int velosityH = 0;
         static int velosityW = 0;
@@ -553,6 +559,7 @@ int main( int argc, char* args[] )
                 FILE *lev2;
                 FILE *lev3;
                 FILE *lev4;
+                FILE *lev5;
                 if ((lev1 = fopen("level1.txt", "r")) == NULL){
                     puts("Can not open lev1.txt!\n");
                     return false;
@@ -575,6 +582,10 @@ int main( int argc, char* args[] )
                     puts("Can not open level4.txt!\n");
                     return false;
                 }
+                if ((lev5 = fopen("level5.txt", "r")) == NULL){
+                    puts("Can not open level5.txt!\n");
+                    return false;
+                }
 
                 for (i=0;i<=23;i++){
                     for(j=0;j<=31;j++){
@@ -586,6 +597,8 @@ int main( int argc, char* args[] )
                         fscanf(lev3, "%1d", &Gol1[j][i]);
                         if(l==4)
                         fscanf(lev4, "%1d", &Gol1[j][i]);
+                        if(l==5)
+                        fscanf(lev5, "%1d", &Gol1[j][i]);
                         //fprintf(lev2, "%1d ", &Gol1[i][j]);
                     }
                     //fputs("\n", lev2);
@@ -606,6 +619,7 @@ int main( int argc, char* args[] )
                 fclose(lev2);
                 fclose(lev3);
                 fclose(lev4);
+                fclose(lev5);
 
                     //While there's events to handle
                 while( SDL_PollEvent( &event ) )
@@ -632,6 +646,8 @@ int main( int argc, char* args[] )
                     apply_surface( 0, 0, level3, screen , NULL);
                 if(l==4)
                     apply_surface( 0, 0, level4, screen , NULL);
+                if(l==5)
+                    apply_surface( 0, 0, level5, screen , NULL);
 
                 for (i=0;i<=23;i++){
                     for(j=0;j<=31;j++){
@@ -649,6 +665,11 @@ int main( int argc, char* args[] )
                         }
                         else if (Gol1[j][i] == 5){
                             apply_surface (z2+2, y2-4, death, screen, &clipdeath[3]);
+                            z2=z2+20;
+                        }
+                        else if (Gol1[j][i] == 9) {
+                            Xd=j*20;
+                            Yd=i*20;
                             z2=z2+20;
                         }
                         else z2=z2+20;
@@ -718,9 +739,8 @@ int main( int argc, char* args[] )
                 if( keystates[ SDLK_a ] || keystates[ SDLK_LEFT ] )
                 {
                     if((Gol1[j][i+1]!=1
-                        &&(j1!=0||(Gol1[j-1][i+1]!=1)))&&die==0)
+                        &&(j1!=0||(Gol1[j-1][i+1 ]!=1)))&&die==0)
                         {
-                    //apply_surface( ( SCREEN_WIDTH / 2 - left->w ) / 2, ( SCREEN_HEIGHT - left->h ) / 2, left, screen ,NULL);
                     if(Speed==0)
                     Xor=Xor-4;
                     if(Speed==-1)
@@ -729,23 +749,7 @@ int main( int argc, char* args[] )
                     if(Speed==1)
                         if(j1!=0||Gol1[j-1][i+2]!=1)
                             Xor=Xor-4;
-                    /*if(l==2)
-                        if(Xor<=0){
-                            if(Yor>=195&&Yor<=320){
-                                l=1;
-                                Xor=620;
-                            }
-                            if(Yor>=95&&Yor<=160){
-                                l=3;
-                                Xor=620;
-                            }
-                        }
-                    if(l==4)
-                        if(Xor<=0)
-                            if(Yor>=355&&Yor<=420){
-                                l=3;
-                                Xor=620;
-                            }*/
+
                     if(Xor%50>=0&&Xor%50<=24)
                     {
                         frame=1;
@@ -767,7 +771,6 @@ int main( int argc, char* args[] )
                     if((Gol1[j][i+1]!=1
                         &&(j1!=0||Gol1[j+1][i+1]!=1))&&die==0)
                             {
-                    //apply_surface( ( SCREEN_WIDTH / 2 - right->w ) / 2 + ( SCREEN_WIDTH / 2 ), ( SCREEN_HEIGHT - right->h ) / 2, right, screen ,NULL);
                     if(Speed==0)
                     Xor=Xor+4;
                     if(Speed==-1)
@@ -776,17 +779,6 @@ int main( int argc, char* args[] )
                     if(Speed==1)
                         if(j1!=0||Gol1[j+1][i+2]!=1)
                             Xor=Xor+4;
-                    /*if(l==3)
-                        if(Xor>=620){
-                            if(Yor>=95&&Yor<=160){
-                                l=2;
-                                Xor=0;
-                            }
-                            if(Yor>=355&&Yor<=420){
-                                l=4;
-                                Xor=0;
-                            }
-                        }*/
 
                     if((Xor%51>=0&&Xor%51<=24))
                     {
@@ -809,24 +801,36 @@ int main( int argc, char* args[] )
                         if(Gol1[j][i]==1||(j1!=0&&Gol1[j+1][i]==1))
                         Speed=0;
                     }
-                    if((Gol1[j][i]>=2&&Gol1[j][i]<=5)||(Gol1[j][i+1]>=2&&Gol1[j][i+1]<=5)||(j1!=0&&((Gol1[j+1][i]>=2&&Gol1[j+1][i]<=5)||(Gol1[j+1][i+1]>=2&&Gol1[j+1][i+1]<=5)))){
+                    if((Gol1[j][i]>=2&&Gol1[j][i]<=5)||(Gol1[j][i+1]>=2&&Gol1[j][i+1]<=5)||(j1!=0&&((Gol1[j+1][i]>=2&&Gol1[j+1][i]<=5)||(Gol1[j+1][i+1]>=2&&Gol1[j+1][i+1]<=5))))
                         die=1;
-                        apply_surface( SCREEN_WIDTH/2-dieshow->w/2, SCREEN_HEIGHT/2-dieshow->h/2, dieshow, buttonSur , NULL);
+
+                    if(die==1){
                         Dtime=Dtime+Dspeed;
                         Dspeed=1;
                         Speed=0;
+                        apply_surface( SCREEN_WIDTH/2-dieshow->w/2, SCREEN_HEIGHT/2-dieshow->h/2, dieshow, buttonSur , NULL);
                     }
 
                     if(Dtime>=100){
                         die=0;
                         Dtime=0;
                         Dspeed=0;
-                        Xor=100;
-                        Yor=100;
+                        Xor=Xd;
+                        Yor=Yd;
                         velosityH=0;
                         }
 
                     Yor=Yor+5*Speed;
+
+
+                    if(Gol1[j][i]==8&&Speed==-1){
+                            Speed=1;
+                            velosityH=0;
+                    }
+                    if(Gol1[j][i+2]==8&&Speed==1){
+                            Speed=-1;
+                            velosityH=1;
+                    }
 
                     if(Gol1[j][i]==6||Gol1[j][i+1]==6){
                             l=l+1;
@@ -840,10 +844,6 @@ int main( int argc, char* args[] )
                                 Xor=20;
                             else Xor=610;
                     }
-
-
-                    /*if(l==3)
-                    return false;*/
 
                     if( velosityH==0)
                     {
