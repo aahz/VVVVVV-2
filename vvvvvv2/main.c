@@ -498,51 +498,51 @@ int main( int argc, char* args[] )
 
         //Clip range for the top left
         clipRightD[ 0 ].x = 0;
-        clipRightD[ 0 ].y = 44;
-        clipRightD[ 0 ].w = 24;
-        clipRightD[ 0 ].h = 44;
+        clipRightD[ 0 ].y = 40;
+        clipRightD[ 0 ].w = 20;
+        clipRightD[ 0 ].h = 40;
 
         //Clip range for the top right
-        clipRightD[ 1 ].x = 24;
-        clipRightD[ 1 ].y = 44;
-        clipRightD[ 1 ].w = 24;
-        clipRightD[ 1 ].h = 44;
+        clipRightD[ 1 ].x = 20;
+        clipRightD[ 1 ].y = 40;
+        clipRightD[ 1 ].w = 20;
+        clipRightD[ 1 ].h = 40;
 
         //Clip range for the top left
         clipRightU[ 0 ].x = 0;
         clipRightU[ 0 ].y = 0;
-        clipRightU[ 0 ].w = 24;
-        clipRightU[ 0 ].h = 44;
+        clipRightU[ 0 ].w = 20;
+        clipRightU[ 0 ].h = 40;
 
         //Clip range for the top right
-        clipRightU[ 1 ].x = 24;
+        clipRightU[ 1 ].x = 20;
         clipRightU[ 1 ].y = 0;
-        clipRightU[ 1 ].w = 24;
-        clipRightU[ 1 ].h = 44;
+        clipRightU[ 1 ].w = 20;
+        clipRightU[ 1 ].h = 40;
 
         //Clip range for the top left
-        clipLeftD[ 0 ].x = 72;
-        clipLeftD[ 0 ].y = 44;
-        clipLeftD[ 0 ].w = 24;
-        clipLeftD[ 0 ].h = 44;
+        clipLeftD[ 0 ].x = 60;
+        clipLeftD[ 0 ].y = 40;
+        clipLeftD[ 0 ].w = 20;
+        clipLeftD[ 0 ].h = 40;
 
         //Clip range for the top right
-        clipLeftD[ 1 ].x = 48;
-        clipLeftD[ 1 ].y = 44;
-        clipLeftD[ 1 ].w = 24;
-        clipLeftD[ 1 ].h = 44;
+        clipLeftD[ 1 ].x = 40;
+        clipLeftD[ 1 ].y = 40;
+        clipLeftD[ 1 ].w = 20;
+        clipLeftD[ 1 ].h = 40;
 
         //Clip range for the top left
-        clipLeftU[ 0 ].x = 72;
+        clipLeftU[ 0 ].x = 60;
         clipLeftU[ 0 ].y = 0;
-        clipLeftU[ 0 ].w = 24;
-        clipLeftU[ 0 ].h = 44;
+        clipLeftU[ 0 ].w = 20;
+        clipLeftU[ 0 ].h = 40;
 
         //Clip range for the top right
-        clipLeftU[ 1 ].x = 48;
+        clipLeftU[ 1 ].x = 40;
         clipLeftU[ 1 ].y = 0;
-        clipLeftU[ 1 ].w = 24;
-        clipLeftU[ 1 ].h = 44;
+        clipLeftU[ 1 ].w = 20;
+        clipLeftU[ 1 ].h = 40;
 
         //Render the text
         up = TTF_RenderText_Solid( font, "Up", textColor );
@@ -652,19 +652,19 @@ int main( int argc, char* args[] )
                 for (i=0;i<=23;i++){
                     for(j=0;j<=31;j++){
                         if (Gol1[j][i] == 2){
-                            apply_surface (z2+2, y2+2, death, screen, &clipdeath[0]);
+                            apply_surface (z2, y2, death, screen, &clipdeath[0]);
                             z2=z2+20;
                         }
                         else if (Gol1[j][i] == 3){
-                            apply_surface (z2+2, y2-2, death, screen, &clipdeath[1]);
+                            apply_surface (z2, y2, death, screen, &clipdeath[1]);
                             z2=z2+20;
                         }
                         else if (Gol1[j][i] == 4){
-                            apply_surface (z2+2, y2-4, death, screen, &clipdeath[2]);
+                            apply_surface (z2, y2, death, screen, &clipdeath[2]);
                             z2=z2+20;
                         }
                         else if (Gol1[j][i] == 5){
-                            apply_surface (z2+2, y2-4, death, screen, &clipdeath[3]);
+                            apply_surface (z2, y2, death, screen, &clipdeath[3]);
                             z2=z2+20;
                         }
                         else if (Gol1[j][i] == 9) {
@@ -729,7 +729,7 @@ int main( int argc, char* args[] )
                             {
                             Speed=1;
                             }
-                            if(Gol1[j][i+3]!=1){
+                            if(Gol1[j][i+2]!=1){
                                 Mix_PlayChannel( -1, jump, 0 );
                             }
                         }
@@ -768,8 +768,8 @@ int main( int argc, char* args[] )
                 //If right is pressed
                 if( keystates[ SDLK_d ] || keystates[ SDLK_RIGHT ] )
                 {
-                    if((Gol1[j][i+1]!=1
-                        &&(j1!=0||Gol1[j+1][i+1]!=1))&&die==0)
+                    if((Gol1[j][i+1]!=1&&Gol1[j][i]!=1
+                        &&(j1!=0||(Gol1[j+1][i+1]!=1&&Gol1[j+1][i]!=1)))&&die==0)
                             {
                     if(Speed==0)
                     Xor=Xor+4;
@@ -798,6 +798,7 @@ int main( int argc, char* args[] )
                         if(Gol1[j][i+2]==1||(j1!=0&&Gol1[j+1][i+2]==1))
                         Speed=0;
                     }else if(Speed==-1) {
+                        i=(Yor-5)/20;
                         if(Gol1[j][i]==1||(j1!=0&&Gol1[j+1][i]==1))
                         Speed=0;
                     }
@@ -821,22 +822,28 @@ int main( int argc, char* args[] )
                         }
 
                     Yor=Yor+5*Speed;
+                    /*if(Yor%10!=0&&Speed==0){
+                    Yor=Yor+5;
+                    }*/
+
 
 
                     if(Gol1[j][i]==8&&Speed==-1){
                             Speed=1;
                             velosityH=0;
+                            Mix_PlayChannel( -1, jump, 0 );
                     }
                     if(Gol1[j][i+2]==8&&Speed==1){
                             Speed=-1;
                             velosityH=1;
+                            Mix_PlayChannel( -1, jump, 0 );
                     }
 
                     if(Gol1[j][i]==6||Gol1[j][i+1]==6){
                             l=l+1;
                             if(Xor>=620)
                                 Xor=20;
-                            else Xor=610;
+                            else Xor=616;
                     }
                     if(Gol1[j][i]==7||Gol1[j][i+1]==7){
                             l=l-1;
