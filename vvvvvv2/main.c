@@ -41,7 +41,8 @@ SDL_Surface *level2 = NULL;
 SDL_Surface *level3 = NULL;
 SDL_Surface *level4 = NULL;
 SDL_Surface *level5 = NULL;
-SDL_Surface *capp = NULL;
+SDL_Surface *level6 = NULL;
+SDL_Surface *level7 = NULL;
 SDL_Surface *sky = NULL;
 SDL_Surface *cap = NULL;
 SDL_Surface *death = NULL;
@@ -203,8 +204,9 @@ int load_files()
     level3 = Load_Image( "level3.png" );
     level4 = Load_Image( "level4.png" );
     level5 = Load_Image( "level5.png" );
+    level6 = Load_Image( "level6.png" );
+    level7 = Load_Image( "level7.png" );
     sky = Load_Image( "sky.png" );
-    capp = Load_Image( "cap!.png" );
     cap = Load_Image( "Cap2.png" );
     death = Load_Image( "IGLA.png" );
 
@@ -219,12 +221,14 @@ void clean_up()
     SDL_FreeSurface( level2 );
     SDL_FreeSurface( level3 );
     SDL_FreeSurface( level4 );
+    SDL_FreeSurface( level5 );
+    SDL_FreeSurface( level6 );
+    SDL_FreeSurface( level7 );
     SDL_FreeSurface( up );
     SDL_FreeSurface( down );
     SDL_FreeSurface( left );
     SDL_FreeSurface( right );
     SDL_FreeSurface( cap );
-    SDL_FreeSurface( capp );
     SDL_FreeSurface( death );
 
     Mix_FreeChunk(jump);
@@ -241,6 +245,7 @@ void clean_up()
 int menu (){
     //Условие выхода
     int quit = 1;
+    int saveGame;
 
     //Инициализация
     if( init() != 1 ){
@@ -284,6 +289,18 @@ int menu (){
     apply_surface( 50, 150, ButHowTo, buttonSur , NULL);
     apply_surface( 50, 210, ButCredits, buttonSur , NULL);
     apply_surface( 50, 270, ButExit, buttonSur , NULL);
+
+    //Grubing save
+    FILE *save;
+
+    if ((save = fopen("save.txt", "r")) == NULL){
+        puts("Can not open save.txt!\n");
+        return false;
+    }
+
+    fscanf(save, "%d", &saveGame);
+
+    fclose(save);
 
     //До тех пор, пока пользователь не вышел
     while( quit == 1 ){
@@ -334,7 +351,8 @@ int menu (){
                 apply_surface( 50, 90, ButContinue, buttonSur , NULL);
                 apply_surface( 50, 270, ButExit, buttonSur , NULL);
                 if( keystates[ SDLK_SPACE ] ){
-                    return 1;
+                    saveGame = 1;
+                    return saveGame;
                 }
             }
 
@@ -344,7 +362,7 @@ int menu (){
                 apply_surface( 50, 30, ButNewGame, buttonSur , NULL);
                 apply_surface( 50, 150, ButHowTo, buttonSur , NULL);
                 if( keystates[ SDLK_SPACE ] ){
-                    quit = 0;
+                    return saveGame;
                 }
             }
 
@@ -424,28 +442,16 @@ int menu (){
     return 0;
 }
 
-void DrawIMG1(SDL_Surface *img, int x, int y, int w, int h, int sx, int sy)
-{
-    SDL_Rect dest;
-    dest.x = x;
-    dest.y = y;
-    SDL_Rect src;
-    src.x = sx;
-    src.y = sy;
-    src.w = w;
-    src.h = h;
-    SDL_BlitSurface(img, &src, screen, &dest);
-}
-
 int main( int argc, char* args[] )
 {
-    if(menu()==0)
-    return false;
+    int goOn = menu();
+    if(goOn == 0)
+        return false;
     else{
         Mix_HaltMusic();
         dieshow = TTF_RenderText_Solid( font, "DEAD", textColor );
-        static int Xor=100, Xd;
-        static int Yor=100, Yd;
+        static int Xor, Xd;
+        static int Yor, Yd;
         static int Speed = 0;
         static int velosityH = 0;
         static int velosityW = 0;
@@ -458,7 +464,7 @@ int main( int argc, char* args[] )
         int Dspeed;
         int i1;
         int j1;
-        int l=1;
+        int l = goOn;
         int die=0;
 
         //Quit flag
@@ -560,6 +566,15 @@ int main( int argc, char* args[] )
                 FILE *lev3;
                 FILE *lev4;
                 FILE *lev5;
+                FILE *lev6;
+                FILE *lev7;
+                FILE *lev8;
+                FILE *saveW;
+
+                if ((saveW = fopen("save.txt", "w")) == NULL){
+                    puts("Can not open save.txt!\n");
+                return false;
+                }
                 if ((lev1 = fopen("level1.txt", "r")) == NULL){
                     puts("Can not open lev1.txt!\n");
                     return false;
@@ -586,6 +601,19 @@ int main( int argc, char* args[] )
                     puts("Can not open level5.txt!\n");
                     return false;
                 }
+                if ((lev6 = fopen("level6.txt", "r")) == NULL){
+                    puts("Can not open level6.txt!\n");
+                    return false;
+                }
+                if ((lev7 = fopen("level7.txt", "r")) == NULL){
+                    puts("Can not open level7.txt!\n");
+                    return false;
+                }
+                if ((lev8 = fopen("level8.txt", "r")) == NULL){
+                    puts("Can not open level8.txt!\n");
+                    return false;
+                }
+
 
                 for (i=0;i<=23;i++){
                     for(j=0;j<=31;j++){
@@ -599,6 +627,12 @@ int main( int argc, char* args[] )
                         fscanf(lev4, "%1d", &Gol1[j][i]);
                         if(l==5)
                         fscanf(lev5, "%1d", &Gol1[j][i]);
+                        if(l==6)
+                        fscanf(lev6, "%1d", &Gol1[j][i]);
+                        if(l==7)
+                        fscanf(lev7, "%1d", &Gol1[j][i]);
+                        if(l==8)
+                        fscanf(lev8, "%1d", &Gol1[j][i]);
                         //fprintf(lev2, "%1d ", &Gol1[i][j]);
                     }
                     //fputs("\n", lev2);
@@ -620,6 +654,9 @@ int main( int argc, char* args[] )
                 fclose(lev3);
                 fclose(lev4);
                 fclose(lev5);
+                fclose(lev6);
+                fclose(lev7);
+                fclose(lev8);
 
                     //While there's events to handle
                 while( SDL_PollEvent( &event ) )
@@ -648,6 +685,10 @@ int main( int argc, char* args[] )
                     apply_surface( 0, 0, level4, screen , NULL);
                 if(l==5)
                     apply_surface( 0, 0, level5, screen , NULL);
+                if(l==6)
+                    apply_surface( 0, 0, level6, screen , NULL);
+                if(l==7)
+                    apply_surface( 0, 0, level7, screen , NULL);
 
                 for (i=0;i<=23;i++){
                     for(j=0;j<=31;j++){
@@ -691,7 +732,10 @@ int main( int argc, char* args[] )
 
                 //If up is pressed
                 if( keystates[ SDLK_ESCAPE ] )
+                {
+                    fprintf(saveW, "%d", l);
                     return false;
+                }
 
                 if( keystates[ SDLK_w ] || keystates[ SDLK_UP ] )
                 {
@@ -819,14 +863,9 @@ int main( int argc, char* args[] )
                         Xor=Xd;
                         Yor=Yd;
                         velosityH=0;
-                        }
+                    }
 
                     Yor=Yor+5*Speed;
-                    /*if(Yor%10!=0&&Speed==0){
-                    Yor=Yor+5;
-                    }*/
-
-
 
                     if(Gol1[j][i]==8&&Speed==-1){
                             Speed=1;
@@ -841,15 +880,25 @@ int main( int argc, char* args[] )
 
                     if(Gol1[j][i]==6||Gol1[j][i+1]==6){
                             l=l+1;
-                            if(Xor>=620)
+                            if (l==5){
+                                Yor=20;
+                                Speed=1;
+                            }
+                            else{
+                                if(Xor>=620)
                                 Xor=20;
                             else Xor=616;
+                            }
                     }
                     if(Gol1[j][i]==7||Gol1[j][i+1]==7){
                             l=l-1;
-                            if(Xor>=620)
-                                Xor=20;
-                            else Xor=610;
+                            if (l==4)
+                                Yor=420;
+                                else{
+                                    if(Xor>=620)
+                                    Xor=20;
+                                else Xor=616;
+                                }
                     }
 
                     if( velosityH==0)
@@ -872,14 +921,19 @@ int main( int argc, char* args[] )
                         }
                     }
                     frame=0;
+
                     //Update the screen
                     if( SDL_Flip( screen ) == -1 )
                     {
                         return 1;
                     }
-                }while(l!=5);
+
+                    fclose(saveW);
+
+                }while(l!=9);
         }
         clean_up();
+
         return 0;
         }
         return 0;
