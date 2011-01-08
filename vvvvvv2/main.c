@@ -52,6 +52,9 @@ SDL_Surface *left = NULL;
 SDL_Surface *right = NULL;
 SDL_Surface *screen = NULL;
 SDL_Surface *dieshow = NULL;
+SDL_Surface *final = NULL;
+SDL_Surface *finalText = NULL;
+SDL_Surface *cartoon = NULL;
 
 //The event structure
 SDL_Event event;
@@ -62,10 +65,12 @@ SDL_Rect clipRightU [2];
 SDL_Rect clipLeftU [2];
 SDL_Rect clips [4];
 SDL_Rect clipdeath [4];
+SDL_Rect clipcartoon [3];
 SDL_Rect box;
 
 Mix_Music *music=NULL;
 Mix_Chunk *jump = NULL;
+Mix_Chunk *death0 = NULL;
 
 //The font
 TTF_Font *font = NULL;
@@ -189,6 +194,7 @@ int load_files()
         return 1;
 
     jump = Mix_LoadWAV( "jump.wav" );
+    death0 = Mix_LoadWAV( "death1.wav" );
 
     //Наличие обибок при загрузке шрифтов
     if( font == NULL ){
@@ -209,6 +215,7 @@ int load_files()
     sky = Load_Image( "sky.png" );
     cap = Load_Image( "Cap2.png" );
     death = Load_Image( "IGLA.png" );
+    cartoon = Load_Image( "comix.png" );
 
     //If everything loaded fine
     return true;
@@ -230,6 +237,9 @@ void clean_up()
     SDL_FreeSurface( right );
     SDL_FreeSurface( cap );
     SDL_FreeSurface( death );
+    SDL_FreeSurface( final );
+    SDL_FreeSurface( finalText );
+    SDL_FreeSurface( cartoon );
 
     Mix_FreeChunk(jump);
     Mix_FreeMusic (music);
@@ -245,7 +255,7 @@ void clean_up()
 int menu (){
     //Условие выхода
     int quit = 1;
-    int saveGame;
+    static int saveGame;
 
     //Инициализация
     if( init() != 1 ){
@@ -351,8 +361,7 @@ int menu (){
                 apply_surface( 50, 90, ButContinue, buttonSur , NULL);
                 apply_surface( 50, 270, ButExit, buttonSur , NULL);
                 if( keystates[ SDLK_SPACE ] ){
-                    saveGame = 1;
-                    return saveGame;
+                    return 1;
                 }
             }
 
@@ -362,6 +371,10 @@ int menu (){
                 apply_surface( 50, 30, ButNewGame, buttonSur , NULL);
                 apply_surface( 50, 150, ButHowTo, buttonSur , NULL);
                 if( keystates[ SDLK_SPACE ] ){
+                    if (saveGame == 0)
+                        saveGame = 1;
+                    else if (saveGame == 9 || saveGame == 8)
+                        saveGame = 1;
                     return saveGame;
                 }
             }
@@ -460,12 +473,19 @@ int main( int argc, char* args[] )
         static int skys = 2;
         int Gol1[32][24], j, i;
         int z2=0,y2=0;
-        int Dtime;
+        int Dtime=150;
         int Dspeed;
         int i1;
         int j1;
         int l = goOn;
         int die=0;
+        int DeathCount=0;
+        int FinalTime=0;
+        int FinalSpeed=1;
+        char DeathScore[10];
+        int frameCartoon = 0;
+        int SoundTime=0;
+        int SoundSpeed=1;
 
         //Quit flag
         int quit = false;
@@ -549,6 +569,22 @@ int main( int argc, char* args[] )
         clipLeftU[ 1 ].y = 0;
         clipLeftU[ 1 ].w = 20;
         clipLeftU[ 1 ].h = 40;
+
+        //Final movie
+        clipcartoon[ 0 ].x = 0;
+        clipcartoon[ 0 ].y = 0;
+        clipcartoon[ 0 ].w = 246;
+        clipcartoon[ 0 ].h = 250;
+
+        clipcartoon[ 1 ].x = 246;
+        clipcartoon[ 1 ].y = 0;
+        clipcartoon[ 1 ].w = 246;
+        clipcartoon[ 1 ].h = 250;
+
+        clipcartoon[ 2 ].x = 492;
+        clipcartoon[ 2 ].y = 0;
+        clipcartoon[ 2 ].w = 246;
+        clipcartoon[ 2 ].h = 250;
 
         //Render the text
         up = TTF_RenderText_Solid( font, "Up", textColor );
@@ -673,6 +709,7 @@ int main( int argc, char* args[] )
                 {
                     skyx=0;
                 }
+                SoundTime=SoundTime+SoundSpeed;
                 //Apply the background
                 apply_surface( skyx, 0, sky, screen , NULL);
                 if(l==1)
@@ -846,10 +883,13 @@ int main( int argc, char* args[] )
                         if(Gol1[j][i]==1||(j1!=0&&Gol1[j+1][i]==1))
                         Speed=0;
                     }
-                    if((Gol1[j][i]>=2&&Gol1[j][i]<=5)||(Gol1[j][i+1]>=2&&Gol1[j][i+1]<=5)||(j1!=0&&((Gol1[j+1][i]>=2&&Gol1[j+1][i]<=5)||(Gol1[j+1][i+1]>=2&&Gol1[j+1][i+1]<=5))))
+                    if((Gol1[j][i]>=2&&Gol1[j][i]<=5)||(Gol1[j][i+1]>=2&&Gol1[j][i+1]<=5)||(j1!=0&&((Gol1[j+1][i]>=2&&Gol1[j+1][i]<=5)||(Gol1[j+1][i+1]>=2&&Gol1[j+1][i+1]<=5)))){
                         die=1;
+                        DeathCount=DeathCount+1;
+                    }
 
                     if(die==1){
+                        Mix_PlayChannel( -1, death0, 0 );
                         Dtime=Dtime+Dspeed;
                         Dspeed=1;
                         Speed=0;
@@ -865,7 +905,35 @@ int main( int argc, char* args[] )
                         velosityH=0;
                     }
 
-                    Yor=Yor+5*Speed;
+                    if(l==8){
+                        snprintf (DeathScore, sizeof (DeathCount), "%d", DeathCount);
+                        final = TTF_RenderText_Solid (font, DeathScore, redColor);
+                        finalText = TTF_RenderText_Solid (font, "Your death score is:", textColor);
+                        apply_surface( SCREEN_WIDTH/2-finalText->w/2, SCREEN_HEIGHT/2-finalText->h/2-50, finalText, buttonSur , NULL);
+                        apply_surface( SCREEN_WIDTH/2-final->w/2, SCREEN_HEIGHT/2-final->h/2, final, buttonSur , NULL);
+                        FinalTime=FinalTime+FinalSpeed;
+                    }
+
+                    if(FinalTime==1000){
+                    l=9;
+                    }
+
+                    if (l == 9) {
+                        finalText = TTF_RenderText_Solid (fontSmall, "Press ESC button to leave the game...", textColor);
+                        FinalTime=FinalTime+FinalSpeed;
+                        apply_surface( SCREEN_WIDTH/2-finalText->w/2, SCREEN_HEIGHT/2-finalText->h/2+150, finalText, buttonSur , NULL);
+                        if (FinalTime == 1700)
+                            frameCartoon = 1;
+                        else if (FinalTime == 2400){
+                            frameCartoon = 2;
+                            FinalSpeed = 0;
+                        }
+                        apply_surface( SCREEN_WIDTH/2-cartoon->w/6, SCREEN_HEIGHT/2-cartoon->h/2, cartoon, buttonSur , &clipcartoon[frameCartoon]);
+
+                    }
+
+                    if(l!=9)
+                        Yor=Yor+5*Speed;
 
                     if(Gol1[j][i]==8&&Speed==-1){
                             Speed=1;
@@ -883,7 +951,8 @@ int main( int argc, char* args[] )
                             if (l==5){
                                 Yor=20;
                                 Speed=1;
-                            }
+                            }else if (l==8)
+                                Yor=420;
                             else{
                                 if(Xor>=620)
                                 Xor=20;
@@ -901,7 +970,7 @@ int main( int argc, char* args[] )
                                 }
                     }
 
-                    if( velosityH==0)
+                    if( velosityH==0&&l!=9)
                     {
                         if( velosityW==1)
                         {
@@ -910,7 +979,7 @@ int main( int argc, char* args[] )
                         {
                         apply_surface (Xor, Yor, cap, screen, &clipLeftD[frame]);
                         }
-                    } else if( velosityH==1)
+                    } else if( velosityH==1&&l!=9)
                     {
                         if( velosityW==1)
                         {
@@ -930,8 +999,8 @@ int main( int argc, char* args[] )
 
                     fclose(saveW);
 
-                }while(l!=9);
-        }
+                }while(l!=10);
+            }
         clean_up();
 
         return 0;
