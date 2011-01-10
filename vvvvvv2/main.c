@@ -885,7 +885,6 @@ int main( int argc, char* args[] )
                     }
                     if((Gol1[j][i]>=2&&Gol1[j][i]<=5)||(Gol1[j][i+1]>=2&&Gol1[j][i+1]<=5)||(j1!=0&&((Gol1[j+1][i]>=2&&Gol1[j+1][i]<=5)||(Gol1[j+1][i+1]>=2&&Gol1[j+1][i+1]<=5)))){
                         die=1;
-                        DeathCount=DeathCount+1;
                     }
 
                     if(die==1){
@@ -903,10 +902,11 @@ int main( int argc, char* args[] )
                         Xor=Xd;
                         Yor=Yd;
                         velosityH=0;
+                        DeathCount=DeathCount+1;
                     }
 
                     if(l==8){
-                        snprintf (DeathScore, sizeof (DeathCount), "%d", DeathCount);
+                        snprintf (DeathScore, sizeof (DeathScore), "%d", DeathCount);
                         final = TTF_RenderText_Solid (font, DeathScore, redColor);
                         finalText = TTF_RenderText_Solid (font, "Your death score is:", textColor);
                         apply_surface( SCREEN_WIDTH/2-finalText->w/2, SCREEN_HEIGHT/2-finalText->h/2-50, finalText, buttonSur , NULL);
