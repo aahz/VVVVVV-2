@@ -2,6 +2,7 @@
 #include "SDL/SDL_ttf.h"
 #include "SDL/SDL_image.h"
 #include "SDL/SDL_mixer.h"
+#include "SDL/SDL_net.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -85,6 +86,10 @@ SDL_Color currentColor4 = { 127, 226, 106 };
 SDL_Color currentColor5 = { 184, 234, 87 };
 SDL_Color redColor = { 201, 23, 23 };
 
+TCPsocket hostD;
+IPaddress ip, *remoteIP;
+SDLNet_SocketSet socketSet=NULL;
+
 
 
 SDL_Surface *Load_Image( char* filename ){
@@ -132,6 +137,9 @@ int init()
     {
         return false;
     }
+
+    if (SDLNet_Init() == -1)
+        return false;
 
     //Устанавливаем экран
     buttonSur = SDL_SetVideoMode( SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_BPP, SDL_SWSURFACE );
@@ -244,6 +252,9 @@ void clean_up()
     Mix_FreeChunk(jump);
     Mix_FreeMusic (music);
     Mix_CloseAudio();
+
+    SDLNet_TCP_Close(hostD);
+    SDLNet_Quit();
 
     //Quit SDL_ttf
     TTF_Quit();
@@ -470,13 +481,14 @@ int main( int argc, char* args[] )
         static int velosityW = 0;
         static int frame = 0;
         static int skyx = 0;
-        static int skys = 2;
+        static int skys = 1;
         int Gol1[32][24], j, i;
         int z2=0,y2=0;
         int Dtime=150;
         int Dspeed;
         int i1;
         int j1;
+        int host = 0;
         int l = goOn;
         int die=0;
         int DeathCount=0;
@@ -486,15 +498,18 @@ int main( int argc, char* args[] )
         int frameCartoon = 0;
         int SoundTime=0;
         int SoundSpeed=1;
+        int nettest = -1;
+        Uint8 *keystates = SDL_GetKeyState( NULL );
+        SDLNet_ResolveHost(&ip, "127.0.0.1", 2000);
+        hostD = SDLNet_TCP_Open(&ip);
+
+        socketSet = SDLNet_AllocSocketSet(1);
+        nettest = SDLNet_TCP_AddSocket(socketSet, hostD);
 
         //Quit flag
         int quit = false;
 
         //Initialize
-        if( init() == false )
-        {
-            return 1;
-        }
 
         //Load the files
         if( load_files() == false )
@@ -758,9 +773,6 @@ int main( int argc, char* args[] )
                 y2=0;
 
 
-                //Get the keystates
-                Uint8 *keystates = SDL_GetKeyState( NULL );
-
                 j=Xor/20;
                 i=Yor/20;
                 j1=Xor%20;
@@ -875,6 +887,13 @@ int main( int argc, char* args[] )
                     if(Gol1[j+1][i]!=1&&velosityH==0)
                         Speed=1;
                     }
+
+                    SDLNet_CheckSockets(socketSet, 0);
+                    if (SDLNet_SocketReady(hostD) != 0)
+                    {
+                        SDLNet_TCP_Recv(hostD, &skys, sizeof(int));
+                    }
+
                     if(Speed==1){
                         if(Gol1[j][i+2]==1||(j1!=0&&Gol1[j+1][i+2]==1))
                         Speed=0;
@@ -897,12 +916,12 @@ int main( int argc, char* args[] )
 
                     if(Dtime>=100){
                         die=0;
-                        Dtime=0;
                         Dspeed=0;
                         Xor=Xd;
                         Yor=Yd;
                         velosityH=0;
                         DeathCount=DeathCount+1;
+                        Dtime=0;
                     }
 
                     if(l==8){
