@@ -488,10 +488,9 @@ int main( int argc, char* args[] )
         int Dspeed;
         int i1;
         int j1;
-        int host = 0;
         int l = goOn;
         int die=0;
-        int DeathCount=0;
+        int DeathCount=-1;
         int FinalTime=0;
         int FinalSpeed=1;
         char DeathScore[10];
@@ -665,25 +664,32 @@ int main( int argc, char* args[] )
                     return false;
                 }
 
-
                 for (i=0;i<=23;i++){
                     for(j=0;j<=31;j++){
-                        if(l==1)
-                        fscanf(lev1, "%1d ", &Gol1[j][i]);
-                        if(l==2)
-                        fscanf(lev2, "%1d", &Gol1[j][i]);
-                        if(l==3)
-                        fscanf(lev3, "%1d", &Gol1[j][i]);
-                        if(l==4)
-                        fscanf(lev4, "%1d", &Gol1[j][i]);
-                        if(l==5)
-                        fscanf(lev5, "%1d", &Gol1[j][i]);
-                        if(l==6)
-                        fscanf(lev6, "%1d", &Gol1[j][i]);
-                        if(l==7)
-                        fscanf(lev7, "%1d", &Gol1[j][i]);
-                        if(l==8)
-                        fscanf(lev8, "%1d", &Gol1[j][i]);
+                        if(l==1){
+                            fscanf(lev1, "%1d", &Gol1[j][i]);
+                        }
+                        if(l==2){
+                            fscanf(lev2, "%1d", &Gol1[j][i]);
+                        }
+                        if(l==3){
+                            fscanf(lev3, "%1d", &Gol1[j][i]);
+                        }
+                        if(l==4){
+                            fscanf(lev4, "%1d", &Gol1[j][i]);
+                        }
+                        if(l==5){
+                            fscanf(lev5, "%1d", &Gol1[j][i]);
+                        }
+                        if(l==6){
+                            fscanf(lev6, "%1d", &Gol1[j][i]);
+                        }
+                        if(l==7){
+                            fscanf(lev7, "%1d", &Gol1[j][i]);
+                        }
+                        if(l==8){
+                            fscanf(lev8, "%1d", &Gol1[j][i]);
+                        }
                         //fprintf(lev2, "%1d ", &Gol1[i][j]);
                     }
                     //fputs("\n", lev2);
@@ -888,12 +894,6 @@ int main( int argc, char* args[] )
                         Speed=1;
                     }
 
-                    SDLNet_CheckSockets(socketSet, 0);
-                    if (SDLNet_SocketReady(hostD) != 0)
-                    {
-                        SDLNet_TCP_Recv(hostD, &skys, sizeof(int));
-                    }
-
                     if(Speed==1){
                         if(Gol1[j][i+2]==1||(j1!=0&&Gol1[j+1][i+2]==1))
                         Speed=0;
@@ -913,7 +913,6 @@ int main( int argc, char* args[] )
                         Speed=0;
                         apply_surface( SCREEN_WIDTH/2-dieshow->w/2, SCREEN_HEIGHT/2-dieshow->h/2, dieshow, buttonSur , NULL);
                     }
-
                     if(Dtime>=100){
                         die=0;
                         Dspeed=0;
@@ -921,11 +920,12 @@ int main( int argc, char* args[] )
                         Yor=Yd;
                         velosityH=0;
                         DeathCount=DeathCount+1;
+                        snprintf (DeathScore, sizeof (DeathScore), "%d", DeathCount);
+                        SDLNet_TCP_Send(hostD, &DeathCount, sizeof(int));
                         Dtime=0;
                     }
 
                     if(l==8){
-                        snprintf (DeathScore, sizeof (DeathScore), "%d", DeathCount);
                         final = TTF_RenderText_Solid (font, DeathScore, redColor);
                         finalText = TTF_RenderText_Solid (font, "Your death score is:", textColor);
                         apply_surface( SCREEN_WIDTH/2-finalText->w/2, SCREEN_HEIGHT/2-finalText->h/2-50, finalText, buttonSur , NULL);
