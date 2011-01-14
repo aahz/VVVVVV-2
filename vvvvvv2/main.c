@@ -498,15 +498,12 @@ int main( int argc, char* args[] )
         int SoundTime=0;
         int SoundSpeed=1;
         int nettest = -1;
-        int Online = 0;
-        Uint8 *keystates = SDL_GetKeyState( NULL );
+
         SDLNet_ResolveHost(&ip, "127.0.0.1", 2000);
         hostD = SDLNet_TCP_Open(&ip);
 
         socketSet = SDLNet_AllocSocketSet(1);
         nettest = SDLNet_TCP_AddSocket(socketSet, hostD);
-        if (nettest)
-            Online = 1;
 
         //Quit flag
         int quit = false;
@@ -781,6 +778,7 @@ int main( int argc, char* args[] )
                 }
                 y2=0;
 
+                Uint8 *keystates = SDL_GetKeyState( NULL );
 
                 j=Xor/20;
                 i=Yor/20;
@@ -791,8 +789,6 @@ int main( int argc, char* args[] )
                 //If up is pressed
                 if( keystates[ SDLK_ESCAPE ] )
                 {
-                    Online = 0;
-                    SDLNet_TCP_Send(hostD, &Online, sizeof(int));
                     fprintf(saveW, "%d", l);
                     return false;
                 }
@@ -868,7 +864,6 @@ int main( int argc, char* args[] )
                     if(Gol1[j-1][i]!=1&&velosityH==0)
                         Speed=1;
                 }
-
                 //If right is pressed
                 if( keystates[ SDLK_d ] || keystates[ SDLK_RIGHT ] )
                 {
@@ -926,7 +921,8 @@ int main( int argc, char* args[] )
                         velosityH=0;
                         DeathCount=DeathCount+1;
                         snprintf (DeathScore, sizeof (DeathScore), "%d", DeathCount);
-                        SDLNet_TCP_Send(hostD, &DeathCount, sizeof(int));
+                        if(hostD != NULL)
+                            SDLNet_TCP_Send(hostD, &DeathCount, sizeof(int));
                         Dtime=0;
                     }
 
