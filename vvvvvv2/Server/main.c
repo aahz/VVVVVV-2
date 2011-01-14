@@ -101,40 +101,42 @@ int main( int argc, char* args[] )
     init();
     load_files();
     int quit = 0;
-    int host = 1;
     char DeathScore[3];
     int DeathCount=0;
+    int Online = 1;
     SDLNet_ResolveHost(&ip, NULL, 2000);
     hostD = SDLNet_TCP_Open(&ip);
-    socketSet = SDLNet_AllocSocketSet(1);
-    while (clientD==NULL)
-    {
-        clientD = SDLNet_TCP_Accept(hostD);
-        apply_surface (0,0,off,screen);
-        SDL_Flip (screen);
-    }
-    SDLNet_TCP_AddSocket(socketSet, clientD);
-    while (quit == 0)
-    {
-        while (SDL_PollEvent (&event))
+        while (quit == 0)
         {
-            if (event.type == SDL_QUIT)
-                quit = 1;
+            while (SDL_PollEvent (&event))
+            {
+                if (event.type == SDL_QUIT)
+                    quit = 1;
+            }
+            socketSet = SDLNet_AllocSocketSet(1);
+            while (clientD==NULL)
+            {
+                clientD = SDLNet_TCP_Accept(hostD);
+                apply_surface (0,0,off,screen);
+                SDL_Flip (screen);
+            }
+            SDLNet_TCP_AddSocket(socketSet, clientD);
+            SDLNet_CheckSockets(socketSet, 0);
+            if (SDLNet_SocketReady(clientD) != 0)
+            {
+                Online = SDLNet_TCP_Recv(clientD, &DeathCount, sizeof(int));
+                if (Online == -1)
+                    clientD = NULL;
+            }
+            snprintf (DeathScore, sizeof (DeathScore), "%d", DeathCount);
+            messageC = TTF_RenderText_Solid (font, DeathScore, redColor);
+            message = TTF_RenderText_Solid (font, "Your death score is:", textColor);
+            apply_surface (0,0,off,screen);
+            apply_surface (0,0,on,screen);
+            apply_surface( SCREEN_WIDTH/2-messageC->w/2, SCREEN_HEIGHT/2-messageC->h/2+190, messageC, screen );
+            apply_surface( SCREEN_WIDTH/2-message->w/2, SCREEN_HEIGHT/2-message->h/2+130, message, screen );
+            SDL_Flip (screen);
         }
-        SDLNet_CheckSockets(socketSet, 0);
-        if (SDLNet_SocketReady(clientD) != 0)
-        {
-            SDLNet_TCP_Recv(clientD, &DeathCount, sizeof(int));
-        }
-        snprintf (DeathScore, sizeof (DeathScore), "%d", DeathCount);
-        messageC = TTF_RenderText_Solid (font, DeathScore, redColor);
-        message = TTF_RenderText_Solid (font, "Your death score is:", textColor);
-        apply_surface (0,0,off,screen);
-        apply_surface (0,0,on,screen);
-        apply_surface( SCREEN_WIDTH/2-messageC->w/2, SCREEN_HEIGHT/2-messageC->h/2+190, messageC, screen );
-        apply_surface( SCREEN_WIDTH/2-message->w/2, SCREEN_HEIGHT/2-message->h/2+130, message, screen );
-		SDL_Flip (screen);
-    }
     clean_up();
     return 0;
 }
