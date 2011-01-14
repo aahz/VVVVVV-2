@@ -102,10 +102,11 @@ int main( int argc, char* args[] )
     load_files();
     int quit = 0;
     char DeathScore[3];
-    int DeathCount=0;
+    int DeathCount=-1;
     int Online = 1;
     SDLNet_ResolveHost(&ip, NULL, 2000);
     hostD = SDLNet_TCP_Open(&ip);
+
         while (quit == 0)
         {
             while (SDL_PollEvent (&event))
@@ -113,20 +114,29 @@ int main( int argc, char* args[] )
                 if (event.type == SDL_QUIT)
                     quit = 1;
             }
-            socketSet = SDLNet_AllocSocketSet(1);
+
             while (clientD==NULL)
             {
                 clientD = SDLNet_TCP_Accept(hostD);
+                if(clientD)
+                {
+                    socketSet = SDLNet_AllocSocketSet(1);
+                    SDLNet_TCP_AddSocket(socketSet, clientD);
+                }
                 apply_surface (0,0,off,screen);
                 SDL_Flip (screen);
             }
-            SDLNet_TCP_AddSocket(socketSet, clientD);
+
             SDLNet_CheckSockets(socketSet, 0);
+
             if (SDLNet_SocketReady(clientD) != 0)
             {
                 Online = SDLNet_TCP_Recv(clientD, &DeathCount, sizeof(int));
                 if (Online == -1)
+                {
                     clientD = NULL;
+                    SDLNet_TCP_DelSocket(socketSet,clientD);
+                }
             }
             snprintf (DeathScore, sizeof (DeathScore), "%d", DeathCount);
             messageC = TTF_RenderText_Solid (font, DeathScore, redColor);
